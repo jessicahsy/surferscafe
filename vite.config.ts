@@ -20,7 +20,7 @@ function figmaAssetResolver() {
 }
 
 export default defineConfig({
-  base: '/surfers_cafe/',
+  base: '/surferscafe/', // must match repo name exactly
   plugins: [
     figmaAssetResolver(),
     react(),
