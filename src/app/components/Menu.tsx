@@ -66,14 +66,17 @@ const menuItems: MenuItem[] = [
 
   // 商品
   { id: 'merch-bottle', name: '瓶裝飲料', price: 30, category: '商品', imageUrl: 'src/images/merch/other_bev.png'},
+  { id: 'merch-smallwater', name: '小瓶水', price: 20, category: '商品', imageUrl: 'src/images/merch/small_water.png' },
+  { id: 'merch-bigwater', name: '大瓶水', price: 30, category: '商品', imageUrl: 'src/images/merch/big_water.png' },  
   { id: 'merch-cola', name: '可樂', price: 40, category: '商品', imageUrl: 'src/images/merch/cola.png' },
   { id: 'merch-coconut', name: '椰子汁', price: 50, category: '商品', imageUrl: 'src/images/merch/coconut.png' },
   { id: 'merch-energy', name: '能量飲料', price: 70, category: '商品', imageUrl: 'src/images/merch/energy.png' },
   { id: 'merch-beer', name: '啤酒', price: 40, category: '商品', imageUrl: 'src/images/merch/beer.png' },
   { id: 'merch-orion', name: '奧利恩', price: 50, category: '商品', imageUrl: 'src/images/merch/orion.png' },
-  { id: 'merch-shower', name: '洗澡', price: 20, category: '商品', imageUrl: createPlaceholderImage('洗澡', 0) },
-  { id: 'merch-footwash', name: '沖腳', price: 20, category: '商品', imageUrl: createPlaceholderImage('沖腳', 1) },
-  { id: 'merch-other', name: '其他', price: 0, category: '商品', imageUrl: createPlaceholderImage('其他', 2), requiresMemo: true },
+  { id: 'merch-corona', name: '科罗纳', price: 20, category: '商品', imageUrl: 'src/images/merch/corona.png' },
+  { id: 'merch-shower', name: '洗澡', price: 20, category: '商品', imageUrl: 'src/images/merch/shower.png' },
+  { id: 'merch-footwash', name: '沖腳', price: 20, category: '商品', imageUrl: 'src/images/merch/footwash.png' },
+  { id: 'merch-other', name: '其他', price: 0, category: '商品', imageUrl: 'src/images/merch/other.png', requiresMemo: true },
 ];
 
 export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, cartCount }: Props) {
