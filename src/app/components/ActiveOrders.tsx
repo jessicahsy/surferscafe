@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Check, Clock, Edit3, Trash2, X } from 'lucide-react';
+import { Clock, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import * as Dialog from '@radix-ui/react-dialog';
 import type { Order } from '../App';
@@ -11,12 +11,26 @@ type Props = {
   removeOrder: (orderId: string) => void;
 };
 
-export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, removeOrder }: Props) {
-  const [editingMemo, setEditingMemo] = useState<{ orderId: string; itemId: string; itemName: string } | null>(null);
-  const [memoText, setMemoText] = useState('');
+type EditingMemoState = {
+  orderId: string;
+  itemId: string;
+  itemName: string;
+} | null;
 
-  const activeOrders = useMemo(() => orders.filter(o => o.status === '製作中').sort((a, b) => a.sequence - b.sequence), [orders]);
-  const completedOrders = useMemo(() => orders.filter(o => o.status === '完成').sort((a, b) => a.sequence - b.sequence), [orders]);
+export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, removeOrder }: Props) {
+  const [editingMemo, setEditingMemo] = useState<EditingMemoState>(null);
+  const [memoText, setMemoText] = useState('');
+  const [showCompleted, setShowCompleted] = useState(false);
+
+  const activeOrders = useMemo(
+    () => orders.filter((o) => o.status === '製作中').sort((a, b) => a.sequence - b.sequence),
+    [orders]
+  );
+
+  const completedOrders = useMemo(
+    () => orders.filter((o) => o.status === '完成').sort((a, b) => a.sequence - b.sequence),
+    [orders]
+  );
 
   const openMemo = (orderId: string, itemId: string, itemName: string, existingMemo = '') => {
     setEditingMemo({ orderId, itemId, itemName });
@@ -31,32 +45,41 @@ export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, remov
   };
 
   const OrderCard = ({ order }: { order: Order }) => {
-    const missingMemoItem = order.items.find(item => item.requiresMemo && !item.memo?.trim());
-    const actionLabel = missingMemoItem ? '填寫備注' : '完成';
-
     return (
-      <div className={`rounded-[28px] border bg-white p-4 shadow-sm ${order.status === '完成' ? 'border-emerald-200' : 'border-stone-200'}`}>
-        <div className="mb-4 flex items-start justify-between gap-3">
+      <div
+        className={`flex h-full min-h-0 flex-col overflow-hidden rounded-[28px] border bg-white p-3 shadow-sm ${
+          order.status === '完成' ? 'border-emerald-200' : 'border-stone-200'
+        }`}
+      >
+        <div className="mb-3 flex items-start justify-between gap-2">
           <div>
-            <h3 className="text-lg font-semibold text-stone-900">{order.id}</h3>
+            <h3 className="text-base font-semibold text-stone-900">{order.id}</h3>
             <p className="mt-1 flex items-center gap-1.5 text-sm text-stone-500">
               <Clock className="h-3.5 w-3.5" />
               {format(order.timestamp, 'HH:mm')}
             </p>
           </div>
-          <div className={`rounded-full px-3 py-1 text-sm font-medium ${order.status === '完成' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}>
+
+          <div
+            className={`rounded-full px-3 py-1 text-sm font-medium ${
+              order.status === '完成'
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-amber-100 text-amber-800'
+            }`}
+          >
             {order.status}
           </div>
         </div>
 
-        <div className="space-y-2">
-          {order.items.map(item => (
-            <div key={item.id} className="rounded-2xl bg-stone-50 px-3 py-2.5">
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+          {order.items.map((item) => (
+            <div key={item.id} className="rounded-2xl bg-stone-50 px-3 py-2">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-stone-900">{item.name}</span>
                     <span className="text-sm text-stone-500">x{item.quantity}</span>
+
                     {item.requiresMemo && !item.memo?.trim() && (
                       <button
                         onClick={() => openMemo(order.id, item.id, item.name, item.memo || '')}
@@ -66,6 +89,7 @@ export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, remov
                       </button>
                     )}
                   </div>
+
                   {item.memo?.trim() && (
                     <p className="mt-1 text-xs text-stone-500">備註：{item.memo}</p>
                   )}
@@ -75,13 +99,10 @@ export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, remov
           ))}
         </div>
 
-        <div className="mt-4 flex gap-2">
+        <div className="mt-3 flex gap-2">
           <button
             onClick={() =>
-              updateOrderStatus(
-                order.id,
-                order.status === '製作中' ? '完成' : '製作中'
-              )
+              updateOrderStatus(order.id, order.status === '製作中' ? '完成' : '製作中')
             }
             className={`rounded-2xl px-4 py-2 text-sm font-semibold transition ${
               order.status === '完成'
@@ -91,6 +112,7 @@ export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, remov
           >
             {order.status === '製作中' ? '完成訂單' : '製作中'}
           </button>
+
           <button
             onClick={() => removeOrder(order.id)}
             className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-stone-600 transition hover:bg-stone-100"
@@ -103,13 +125,12 @@ export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, remov
   };
 
   return (
-    <div className="px-4 py-5 md:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-8">
-        <section>
+    <div className="h-full min-h-0 overflow-hidden px-4 py-5 md:px-6 lg:px-8">
+      <div className="mx-auto flex h-full min-h-0 max-w-7xl flex-col gap-6 overflow-hidden">
+        <section className="flex min-h-0 flex-[1.15] flex-col">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">進行中</h2>
-
             </div>
             <div className="rounded-2xl bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700">
               {activeOrders.length} 張進行中
@@ -117,33 +138,64 @@ export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, remov
           </div>
 
           {activeOrders.length === 0 ? (
-            <div className="rounded-[28px] border border-dashed border-stone-200 bg-white px-4 py-12 text-center text-stone-500 shadow-sm">
+            <div className="flex flex-1 items-center justify-center rounded-[28px] border border-dashed border-stone-200 bg-white px-4 py-12 text-center text-stone-500 shadow-sm">
               目前沒有進行中的訂單
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {activeOrders.map(order => <OrderCard key={order.id} order={order} />)}
+            <div className="h-[60vh] overflow-x-auto overflow-y-hidden">
+              <div className="grid h-full grid-flow-col auto-cols-[minmax(16rem,18rem)] gap-3 pb-2 items-stretch">
+                {activeOrders.map((order) => (
+                  <div key={order.id} className="h-full">
+                    <OrderCard order={order} />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </section>
-
-        {completedOrders.length > 0 && (
-          <section>
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold tracking-tight">已完成</h2>
-              </div>
-              <div className="rounded-2xl bg-stone-100 px-3 py-2 text-sm font-medium text-stone-700">
-                {completedOrders.length} 張完成
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {completedOrders.map(order => <OrderCard key={order.id} order={order} />)}
-            </div>
-          </section>
-        )}
       </div>
+
+      {completedOrders.length > 0 && (
+        <>
+          <button
+            onClick={() => setShowCompleted(true)}
+            className="fixed bottom-5 right-5 z-30 rounded-2xl bg-stone-900 px-5 py-3 text-sm font-semibold text-white shadow-xl transition hover:bg-stone-800"
+          >
+            已完成 ({completedOrders.length})
+          </button>
+
+          <Dialog.Root open={showCompleted} onOpenChange={setShowCompleted}>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm" />
+
+              <Dialog.Content className="fixed inset-6 z-50 flex flex-col overflow-hidden rounded-[32px] bg-stone-100 p-5 shadow-2xl">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <Dialog.Title className="text-2xl font-semibold tracking-tight text-stone-900">
+                      已完成訂單
+                    </Dialog.Title>
+                    <p className="text-sm text-stone-500">{completedOrders.length} 張完成</p>
+                  </div>
+
+                  <Dialog.Close className="rounded-full p-2 text-stone-500 transition hover:bg-white hover:text-stone-900">
+                    <X className="h-6 w-6" />
+                  </Dialog.Close>
+                </div>
+
+                <div className="h-[80vh] overflow-x-auto overflow-y-hidden">
+                  <div className="grid h-full grid-flow-col auto-cols-[minmax(12rem,16rem)] gap-3 pb-2 items-stretch">
+                    {completedOrders.map((order) => (
+                      <div key={order.id} className="h-full">
+                        <OrderCard order={order} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+        </>
+      )}
 
       <Dialog.Root open={editingMemo !== null} onOpenChange={(open) => !open && setEditingMemo(null)}>
         <Dialog.Portal>
@@ -154,6 +206,7 @@ export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, remov
                 <Dialog.Title className="text-lg font-semibold text-stone-900">填寫備註</Dialog.Title>
                 <p className="text-sm text-stone-500">{editingMemo?.itemName}</p>
               </div>
+
               <Dialog.Close className="rounded-full p-2 text-stone-500 transition hover:bg-stone-100 hover:text-stone-900">
                 <X className="h-5 w-5" />
               </Dialog.Close>

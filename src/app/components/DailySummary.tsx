@@ -121,38 +121,26 @@ const paymentBreakdown = useMemo(() => {
           </button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="md:col-span-2">
+        <div className="grid grid-cols-3 gap-4 items-stretch mb-8">
+          <div className="col-span-2 h-full">
             <StatCard
               title="咖啡廳營業額"
               value={`$${cafeRevenue.toLocaleString()}`}
               icon={<Store className="h-5 w-5 text-amber-700" />}
               accent="bg-amber-100"
-              big
             />
           </div>
 
-          <StatCard
-            title="今日訂單數"
-            value={`${todayOrders.length}`}
-            subtext="含進行中與已完成"
-            icon={<ClipboardList className="h-5 w-5 text-stone-700" />}
-            accent="bg-stone-100"
-          />
+          <div className="col-span-1 h-full">
+            <StatCard
+              title="今日訂單數"
+              value={`${todayOrders.length}`}
+              subtext="含進行中與已完成"
+              icon={<ClipboardList className="h-5 w-5 text-stone-700" />}
+              accent="bg-stone-100"
+            />
+          </div>
 
-          <StatCard
-            title="完成訂單"
-            value={`${completedCount}`}
-            icon={<CheckCircle2 className="h-5 w-5 text-emerald-700" />}
-            accent="bg-emerald-100"
-          />
-
-          <StatCard
-            title="進行中訂單"
-            value={`${activeCount}`}
-            icon={<ClipboardList className="h-5 w-5 text-amber-700" />}
-            accent="bg-amber-100"
-          />
         </div>
 
         <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm md:p-6">
