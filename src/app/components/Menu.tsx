@@ -3,6 +3,7 @@ import * as Tabs from '@radix-ui/react-tabs';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Coffee, Sandwich, ShoppingBag, Minus, Plus, X, ImageIcon, CreditCard } from 'lucide-react';
 import type { CartItem, MenuCategory, MenuItem } from '../App';
+import { getMenuImageUrl } from '../images';
 
 type Props = {
   addToCart: (item: MenuItem) => void;
@@ -43,40 +44,40 @@ const createPlaceholderImage = (title: string, index: number) => {
 
 const menuItems: MenuItem[] = [
   // 飲品
-  { id: 'drink-americano-ice', name: '美式（冰）', price: 80, category: '飲品', imageUrl: 'src/images/drinks/americano-i.png'},
-  { id: 'drink-americano-hot', name: '美式（熱）', price: 80, category: '飲品', imageUrl: 'src/images/drinks/americano-h.png'},
-  { id: 'drink-latte-ice', name: '拿鐵（冰）', price: 100, category: '飲品', imageUrl: 'src/images/drinks/latte-i.png'},
-  { id: 'drink-latte-hot', name: '拿鐵（熱）', price: 100, category: '飲品', imageUrl: 'src/images/drinks/latte-h.png' },
-  { id: 'drink-romano', name: '西西里', price: 120, category: '飲品', imageUrl: 'src/images/drinks/romano.png'},
-  { id: 'drink-coldbrew', name: '冷萃', price: 100, category: '飲品', imageUrl: 'src/images/drinks/brew.png'},
-  { id: 'drink-blacktea', name: '古早味紅茶', price: 60, category: '飲品', imageUrl: 'src/images/drinks/black_tea.png' },
-  { id: 'drink-milktea-ice', name: '鮮奶茶（冰）', price: 100, category: '飲品', imageUrl: 'src/images/drinks/milk_tea-i.png' },
-  { id: 'drink-milktea-hot', name: '鮮奶茶（熱）', price: 100, category: '飲品', imageUrl: 'src/images/drinks/milk_tea-h.png' },
-  { id: 'drink-honeylemon', name: '蜂蜜檸檬', price: 80, category: '飲品', imageUrl: 'src/images/drinks/honey_lemon.png' },
-  { id: 'drink-lemoncola', name: '檸檬可樂', price: 60, category: '飲品', imageUrl: 'src/images/drinks/lemon_coke.png' },
-  { id: 'drink-lemonsparkle', name: '檸檬氣泡水', price: 60, category: '飲品', imageUrl: 'src/images/drinks/sparkling.png' },
+  { id: 'drink-americano-ice', name: '美式（冰）', price: 80, category: '飲品', imageUrl: getMenuImageUrl('drink-americano-ice')! },
+  { id: 'drink-americano-hot', name: '美式（熱）', price: 80, category: '飲品', imageUrl: getMenuImageUrl('drink-americano-hot')! },
+  { id: 'drink-latte-ice', name: '拿鐵（冰）', price: 100, category: '飲品', imageUrl: getMenuImageUrl('drink-latte-ice')! },
+  { id: 'drink-latte-hot', name: '拿鐵（熱）', price: 100, category: '飲品', imageUrl: getMenuImageUrl('drink-latte-hot')! },
+  { id: 'drink-romano', name: '西西里', price: 120, category: '飲品', imageUrl: getMenuImageUrl('drink-romano')! },
+  { id: 'drink-coldbrew', name: '冷萃', price: 100, category: '飲品', imageUrl: getMenuImageUrl('drink-coldbrew')! },
+  { id: 'drink-blacktea', name: '古早味紅茶', price: 60, category: '飲品', imageUrl: getMenuImageUrl('drink-blacktea')! },
+  { id: 'drink-milktea-ice', name: '鮮奶茶（冰）', price: 100, category: '飲品', imageUrl: getMenuImageUrl('drink-milktea-ice')! },
+  { id: 'drink-milktea-hot', name: '鮮奶茶（熱）', price: 100, category: '飲品', imageUrl: getMenuImageUrl('drink-milktea-hot')! },
+  { id: 'drink-honeylemon', name: '蜂蜜檸檬', price: 80, category: '飲品', imageUrl: getMenuImageUrl('drink-honeylemon')! },
+  { id: 'drink-lemoncola', name: '檸檬可樂', price: 60, category: '飲品', imageUrl: getMenuImageUrl('drink-lemoncola')! },
+  { id: 'drink-lemonsparkle', name: '檸檬氣泡水', price: 60, category: '飲品', imageUrl: getMenuImageUrl('drink-lemonsparkle')! },
 
   // 食品
-  { id: 'food-bagel-strawberry', name: '貝果-草莓', price: 60, category: '食品', imageUrl: 'src/images/food/strawberry_c.png' },
-  { id: 'food-bagel-blueberry', name: '貝果-藍莓', price: 60, category: '食品', imageUrl: 'src/images/food/blueberry_c.png' },
-  { id: 'food-bagel-garlic', name: '貝果-蒜味', price: 60, category: '食品', imageUrl: 'src/images/food/garlic_c.png' },
-  { id: 'food-bagel-peanut', name: '貝果-花生', price: 60, category: '食品', imageUrl: 'src/images/food/peanut_c.png' },
-  { id: 'food-bagel-choco', name: '貝果-巧克力', price: 60, category: '食品', imageUrl: 'src/images/food/chocolate_c.png' },
-  { id: 'food-bagel-eggsalad', name: '貝果-蛋沙拉', price: 90, category: '食品', imageUrl: 'src/images/food/egg_c.png' },
+  { id: 'food-bagel-strawberry', name: '貝果-草莓', price: 60, category: '食品', imageUrl: getMenuImageUrl('food-bagel-strawberry')! },
+  { id: 'food-bagel-blueberry', name: '貝果-藍莓', price: 60, category: '食品', imageUrl: getMenuImageUrl('food-bagel-blueberry')! },
+  { id: 'food-bagel-garlic', name: '貝果-蒜味', price: 60, category: '食品', imageUrl: getMenuImageUrl('food-bagel-garlic')! },
+  { id: 'food-bagel-peanut', name: '貝果-花生', price: 60, category: '食品', imageUrl: getMenuImageUrl('food-bagel-peanut')! },
+  { id: 'food-bagel-choco', name: '貝果-巧克力', price: 60, category: '食品', imageUrl: getMenuImageUrl('food-bagel-choco')! },
+  { id: 'food-bagel-eggsalad', name: '貝果-蛋沙拉', price: 90, category: '食品', imageUrl: getMenuImageUrl('food-bagel-eggsalad')! },
 
   // 商品
-  { id: 'merch-bottle', name: '瓶裝飲料', price: 30, category: '商品', imageUrl: 'src/images/merch/other_bev.png'},
-  { id: 'merch-smallwater', name: '小瓶水', price: 20, category: '商品', imageUrl: 'src/images/merch/small_water.png' },
-  { id: 'merch-bigwater', name: '大瓶水', price: 30, category: '商品', imageUrl: 'src/images/merch/big_water.png' },  
-  { id: 'merch-cola', name: '可樂', price: 40, category: '商品', imageUrl: 'src/images/merch/cola.png' },
-  { id: 'merch-coconut', name: '椰子汁', price: 50, category: '商品', imageUrl: 'src/images/merch/coconut.png' },
-  { id: 'merch-energy', name: '能量飲料', price: 70, category: '商品', imageUrl: 'src/images/merch/energy.png' },
-  { id: 'merch-beer', name: '啤酒', price: 40, category: '商品', imageUrl: 'src/images/merch/beer.png' },
-  { id: 'merch-orion', name: '奧利恩', price: 50, category: '商品', imageUrl: 'src/images/merch/orion.png' },
-  { id: 'merch-corona', name: '科罗纳', price: 20, category: '商品', imageUrl: 'src/images/merch/corona.png' },
-  { id: 'merch-shower', name: '洗澡', price: 20, category: '商品', imageUrl: 'src/images/merch/shower.png' },
-  { id: 'merch-footwash', name: '沖腳', price: 20, category: '商品', imageUrl: 'src/images/merch/footwash.png' },
-  { id: 'merch-other', name: '其他', price: 0, category: '商品', imageUrl: 'src/images/merch/other.png', requiresMemo: true },
+  { id: 'merch-bottle', name: '瓶裝飲料', price: 30, category: '商品', imageUrl: getMenuImageUrl('merch-bottle')! },
+  { id: 'merch-smallwater', name: '小瓶水', price: 20, category: '商品', imageUrl: getMenuImageUrl('merch-smallwater')! },
+  { id: 'merch-bigwater', name: '大瓶水', price: 30, category: '商品', imageUrl: getMenuImageUrl('merch-bigwater')! },
+  { id: 'merch-cola', name: '可樂', price: 40, category: '商品', imageUrl: getMenuImageUrl('merch-cola')! },
+  { id: 'merch-coconut', name: '椰子汁', price: 50, category: '商品', imageUrl: getMenuImageUrl('merch-coconut')! },
+  { id: 'merch-energy', name: '能量飲料', price: 70, category: '商品', imageUrl: getMenuImageUrl('merch-energy')! },
+  { id: 'merch-beer', name: '啤酒', price: 40, category: '商品', imageUrl: getMenuImageUrl('merch-beer')! },
+  { id: 'merch-orion', name: '奧利恩', price: 50, category: '商品', imageUrl: getMenuImageUrl('merch-orion')! },
+  { id: 'merch-corona', name: '科罗纳', price: 20, category: '商品', imageUrl: getMenuImageUrl('merch-corona')! },
+  { id: 'merch-shower', name: '洗澡', price: 20, category: '商品', imageUrl: getMenuImageUrl('merch-shower')! },
+  { id: 'merch-footwash', name: '沖腳', price: 20, category: '商品', imageUrl: getMenuImageUrl('merch-footwash')! },
+  { id: 'merch-other', name: '其他', price: 0, category: '商品', imageUrl: getMenuImageUrl('merch-other')!, requiresMemo: true },
 ];
 
 export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, cartCount }: Props) {
@@ -160,9 +161,11 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
             tapCard(item, e.target as HTMLElement);
           }
         }}
-        className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${quantity > 0 ? 'border-stone-300 ring-2 ring-stone-300/30' : 'border-stone-200'}`}
+        className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+          quantity > 0 ? 'border-stone-300 ring-2 ring-stone-300/30' : 'border-stone-200'
+        }`}
       >
-        <div className="relative w-full overflow-hidden bg-stone-100 aspect-square">
+        <div className="relative aspect-square w-full overflow-hidden bg-stone-100">
           {item.imageUrl ? (
             <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
           ) : (
@@ -176,9 +179,7 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
           <div className="mb-2 flex items-start justify-between gap-2">
             <div>
               <h3 className="text-[15px] font-semibold leading-tight text-stone-900">{item.name}</h3>
-              {item.requiresMemo && (
-                <p className="mt-1 text-xs text-amber-700">需備註</p>
-              )}
+              {item.requiresMemo && <p className="mt-1 text-xs text-amber-700">需備註</p>}
             </div>
             <span className="shrink-0 text-base font-semibold text-stone-900">
               {isCustom ? '輸入金額' : `$${item.price}`}
@@ -187,41 +188,41 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
 
           <div className="mt-auto">
             {quantity > 0 && (
-  <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2" data-control="true">
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        updateQuantity(item.id, quantity - 1);
-      }}
-      className="flex h-11 items-center justify-center rounded-2xl border border-stone-200 bg-stone-50 text-stone-700 transition hover:bg-stone-100"
-    >
-      <Minus className="h-4 w-4" />
-    </button>
+              <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2" data-control="true">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateQuantity(item.id, quantity - 1);
+                  }}
+                  className="flex h-11 items-center justify-center rounded-2xl border border-stone-200 bg-stone-50 text-stone-700 transition hover:bg-stone-100"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
 
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        openQuantityPad(item);
-      }}
-      className="h-11 rounded-2xl border border-stone-200 bg-white text-lg font-semibold text-stone-900 transition hover:bg-stone-50"
-    >
-      {quantity}
-    </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openQuantityPad(item);
+                  }}
+                  className="h-11 rounded-2xl border border-stone-200 bg-white text-lg font-semibold text-stone-900 transition hover:bg-stone-50"
+                >
+                  {quantity}
+                </button>
 
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        updateQuantity(item.id, quantity + 1);
-      }}
-      className="flex h-11 items-center justify-center rounded-2xl border border-stone-200 bg-stone-50 text-stone-700 transition hover:bg-stone-100"
-    >
-      <Plus className="h-4 w-4" />
-    </button>
-  </div>
-)}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateQuantity(item.id, quantity + 1);
+                  }}
+                  className="flex h-11 items-center justify-center rounded-2xl border border-stone-200 bg-stone-50 text-stone-700 transition hover:bg-stone-100"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -230,9 +231,12 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
 
   const categoryIcon = (category: MenuCategory) => {
     switch (category) {
-      case '飲品': return <Coffee className="h-4 w-4" />;
-      case '食品': return <Sandwich className="h-4 w-4" />;
-      case '商品': return <ShoppingBag className="h-4 w-4" />;
+      case '飲品':
+        return <Coffee className="h-4 w-4" />;
+      case '食品':
+        return <Sandwich className="h-4 w-4" />;
+      case '商品':
+        return <ShoppingBag className="h-4 w-4" />;
     }
   };
 
@@ -244,7 +248,9 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
             <Tabs.Trigger
               key={tab}
               value={tab}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition rounded-2xl ${activeTab === tab ? 'bg-stone-900 text-white shadow' : 'text-stone-600 hover:bg-stone-100'}`}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                activeTab === tab ? 'bg-stone-900 text-white shadow' : 'text-stone-600 hover:bg-stone-100'
+              }`}
             >
               {categoryIcon(tab)}
               {tab}
@@ -261,63 +267,64 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
             </Tabs.Content>
           </section>
 
-        <aside className="rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm md:p-5 lg:sticky lg:top-24 lg:h-[calc(100vh-7rem)] lg:overflow-auto">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">目前訂單</h2>
-            </div>
-
-          </div>
-
-          <div className="space-y-3">
-            {cart.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-stone-200 bg-stone-50 px-4 py-10 text-center text-sm text-stone-500">
-                目前沒有加入任何項目
+          <aside className="rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm md:p-5 lg:sticky lg:top-24 lg:h-[calc(100vh-7rem)] lg:overflow-auto">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">目前訂單</h2>
               </div>
-            ) : (
-              cart.map(item => (
-                <div key={item.id} className="rounded-3xl border border-stone-200 bg-[#fcfaf6] p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-semibold text-stone-900">{item.name}</h3>
-                      <p className="text-sm text-stone-500">${item.price} × {item.quantity}</p>
-                      {item.requiresMemo && (
-                        <p className="mt-1 text-xs text-amber-700">備註待填</p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-stone-900">${item.price * item.quantity}</p>
-                    </div>
-                  </div>
+            </div>
 
-                  {item.requiresMemo}
+            <div className="space-y-3">
+              {cart.length === 0 ? (
+                <div className="rounded-3xl border border-dashed border-stone-200 bg-stone-50 px-4 py-10 text-center text-sm text-stone-500">
+                  目前沒有加入任何項目
                 </div>
-              ))
-            )}
-          </div>
+              ) : (
+                cart.map(item => (
+                  <div key={item.id} className="rounded-3xl border border-stone-200 bg-[#fcfaf6] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold text-stone-900">{item.name}</h3>
+                        <p className="text-sm text-stone-500">
+                          ${item.price} × {item.quantity}
+                        </p>
+                        {item.requiresMemo && <p className="mt-1 text-xs text-amber-700">備註待填</p>}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-semibold text-stone-900">
+                          ${item.price * item.quantity}
+                        </p>
+                      </div>
+                    </div>
 
-          <div className="mt-4 rounded-3xl border border-stone-200 bg-stone-50 p-4">
-            <div className="flex items-center justify-between text-sm text-stone-600">
-              <span>訂單金額</span>
-              <span>{cartCount} 項</span>
+                    {item.requiresMemo}
+                  </div>
+                ))
+              )}
             </div>
-            <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm text-stone-500">合計</span>
-              <span className="text-3xl font-semibold text-stone-900">${cartTotal}</span>
-            </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={onCheckout}
-            disabled={cart.length === 0}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-stone-900 px-4 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-300"
-          >
-            <CreditCard className="h-5 w-5" />
-            結帳
-          </button>
-        </aside>
-      </div>
+            <div className="mt-4 rounded-3xl border border-stone-200 bg-stone-50 p-4">
+              <div className="flex items-center justify-between text-sm text-stone-600">
+                <span>訂單金額</span>
+                <span>{cartCount} 項</span>
+              </div>
+              <div className="mt-2 flex items-end justify-between">
+                <span className="text-sm text-stone-500">合計</span>
+                <span className="text-3xl font-semibold text-stone-900">${cartTotal}</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onCheckout}
+              disabled={cart.length === 0}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-stone-900 px-4 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-300"
+            >
+              <CreditCard className="h-5 w-5" />
+              結帳
+            </button>
+          </aside>
+        </div>
       </Tabs.Root>
 
       <Dialog.Root open={padState !== null} onOpenChange={(open) => !open && setPadState(null)}>
@@ -350,7 +357,11 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
                   key={key}
                   type="button"
                   onClick={() => handlePadKey(key)}
-                  className={`h-14 rounded-2xl text-lg font-semibold transition ${key === 'C' || key === '⌫' ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-stone-100 text-stone-900 hover:bg-stone-200'}`}
+                  className={`h-14 rounded-2xl text-lg font-semibold transition ${
+                    key === 'C' || key === '⌫'
+                      ? 'bg-rose-50 text-rose-700 hover:bg-rose-100'
+                      : 'bg-stone-100 text-stone-900 hover:bg-stone-200'
+                  }`}
                 >
                   {key}
                 </button>

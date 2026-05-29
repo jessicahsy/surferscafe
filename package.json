@@ -6,7 +6,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-  "homepage": "https://jessicahsy.github.io/surfers_cafe",
+  "homepage": "https://jessicahsy.github.io/surferscafe",
   "predeploy": "npm run build",
   "deploy": "gh-pages -d dist"
   },
