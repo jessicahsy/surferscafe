@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 import { format } from 'date-fns';
-import { Store, ClipboardList, CheckCircle2, CreditCard } from 'lucide-react';
+import { Store, ClipboardList, CreditCard } from 'lucide-react';
 import type { Order, PaymentMethod } from '../App';
 
 type Props = {
@@ -12,11 +12,10 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   現金: '現金',
   'LINE Pay': 'LINE Pay',
   '街口支付': '街口支付',
-  轉帳: '銀行轉帳',
   刷卡: '刷卡',
 };
 
-const paymentMethodOrder: PaymentMethod[] = ['現金', 'LINE Pay', '街口支付', '轉帳', '刷卡'];
+const paymentMethodOrder: PaymentMethod[] = ['現金', 'LINE Pay', '街口支付', '刷卡'];
 
 function StatCard({
   title,
@@ -24,21 +23,15 @@ function StatCard({
   subtext,
   icon,
   accent,
-  big = false,
 }: {
   title: string;
   value: string;
   subtext?: string;
   icon: ReactNode;
   accent: string;
-  big?: boolean;
 }) {
   return (
-    <div
-      className={`rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm ${
-        big ? 'md:p-6' : ''
-      }`}
-    >
+    <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-stone-500">{title}</p>
@@ -46,9 +39,7 @@ function StatCard({
         </div>
         <div className={`rounded-2xl p-3 ${accent}`}>{icon}</div>
       </div>
-      <p className={`font-semibold tracking-tight text-stone-900 ${big ? 'text-4xl' : 'text-3xl'}`}>
-        {value}
-      </p>
+      <p className="text-3xl font-semibold tracking-tight text-stone-900">{value}</p>
     </div>
   );
 }
@@ -61,48 +52,31 @@ export function DailySummary({ orders, onSettleToday }: Props) {
     [orders, today]
   );
 
-  const cafeRevenue = useMemo(
-    () => todayOrders.reduce((sum, order) => sum + order.cafeTotal, 0),
+  const revenue = useMemo(
+    () => todayOrders.reduce((sum, order) => sum + order.total, 0),
     [todayOrders]
   );
 
-  const activeCount = todayOrders.filter(order => order.status === '製作中').length;
-  const completedCount = todayOrders.filter(order => order.status === '完成').length;
+  const paymentBreakdown = useMemo(() => {
+    const totals = Object.fromEntries(
+      paymentMethodOrder.map(method => [method, 0])
+    ) as Record<PaymentMethod, number>;
 
-const paymentBreakdown = useMemo(() => {
-  const totals = Object.fromEntries(
-    paymentMethodOrder.map(method => [method, 0])
-  ) as Record<PaymentMethod, number>;
-
-  todayOrders.forEach(order => {
-    // use existing cafeTotal so settlement logic remains unchanged
-    const cafeTotal = order.cafeTotal || 0;
-
-    const orderTotal = order.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
-    if (cafeTotal <= 0 || orderTotal <= 0) return;
-
-    // proportion of order belonging to cafe items
-    const ratio = cafeTotal / orderTotal;
-
-    (order.paymentSplits || []).forEach(split => {
-      if (split.method in totals) {
-        totals[split.method] +=
-          (Number(split.amount) || 0) * ratio;
-      }
+    todayOrders.forEach(order => {
+      (order.paymentSplits || []).forEach(split => {
+        if (split.method in totals) {
+          totals[split.method] += Number(split.amount) || 0;
+        }
+      });
     });
-  });
 
-  return paymentMethodOrder
-    .map(method => ({
-      method,
-      amount: Math.round(totals[method]),
-    }))
-    .filter(item => item.amount > 0);
-}, [todayOrders]);
+    return paymentMethodOrder
+      .map(method => ({
+        method,
+        amount: Math.round(totals[method]),
+      }))
+      .filter(item => item.amount > 0);
+  }, [todayOrders]);
 
   return (
     <div className="px-4 py-5 md:px-6 lg:px-8">
@@ -121,26 +95,20 @@ const paymentBreakdown = useMemo(() => {
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 items-stretch mb-8">
-          <div className="col-span-2 h-full">
-            <StatCard
-              title="咖啡廳營業額"
-              value={`$${cafeRevenue.toLocaleString()}`}
-              icon={<Store className="h-5 w-5 text-amber-700" />}
-              accent="bg-amber-100"
-            />
-          </div>
-
-          <div className="col-span-1 h-full">
-            <StatCard
-              title="今日訂單數"
-              value={`${todayOrders.length}`}
-              subtext="含進行中與已完成"
-              icon={<ClipboardList className="h-5 w-5 text-stone-700" />}
-              accent="bg-stone-100"
-            />
-          </div>
-
+        <div className="grid gap-4 md:grid-cols-2">
+          <StatCard
+            title="今日營業額"
+            value={`$${revenue.toLocaleString()}`}
+            icon={<Store className="h-5 w-5 text-amber-700" />}
+            accent="bg-amber-100"
+          />
+          <StatCard
+            title="今日訂單數"
+            value={`${todayOrders.length}`}
+            subtext="包含已完成與進行中"
+            icon={<ClipboardList className="h-5 w-5 text-stone-700" />}
+            accent="bg-stone-100"
+          />
         </div>
 
         <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm md:p-6">

@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
-import * as Dialog from '@radix-ui/react-dialog';
-import { Coffee, Sandwich, ShoppingBag, Minus, Plus, X, ImageIcon, CreditCard } from 'lucide-react';
-import type { CartItem, MenuCategory, MenuItem } from '../App';
-import { getMenuImageUrl } from '../images';
+import { Coffee, Sandwich, ShoppingBag, Minus, Plus, ImageIcon, CreditCard } from 'lucide-react';
+import type { CartItem, MenuItem, MenuCategory } from '../App';
 
 type Props = {
+  menuItems: MenuItem[];
   addToCart: (item: MenuItem) => void;
   cart: CartItem[];
   updateQuantity: (itemId: string, quantity: number) => void;
@@ -14,151 +13,37 @@ type Props = {
   cartCount: number;
 };
 
-type PadState = {
-  type: 'quantity' | 'price';
-  item: MenuItem;
-  value: string;
-};
-
-const palette = ['#9f7a5a', '#c8925c', '#d7b48a', '#8d6b52', '#b98b6a', '#7f664c'];
-
-const createPlaceholderImage = (title: string, index: number) => {
-  const bg = palette[index % palette.length];
-  const label = encodeURIComponent(title);
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220">
-      <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#fbf4ea"/>
-          <stop offset="100%" stop-color="${bg}"/>
-        </linearGradient>
-      </defs>
-      <rect width="320" height="220" rx="28" fill="url(#g)"/>
-      <circle cx="248" cy="54" r="38" fill="rgba(255,255,255,0.25)"/>
-      <circle cx="82" cy="150" r="60" fill="rgba(255,255,255,0.14)"/>
-      <text x="50%" y="48%" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#ffffff" font-weight="700">${label}</text>
-      <text x="50%" y="64%" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#ffffff" opacity="0.92">可替換照片</text>
-    </svg>
-  `)}`;
-};
-
-const menuItems: MenuItem[] = [
-  // 飲品
-  { id: 'drink-americano-ice', name: '美式（冰）', price: 80, category: '飲品', imageUrl: getMenuImageUrl('drink-americano-ice')! },
-  { id: 'drink-americano-hot', name: '美式（熱）', price: 80, category: '飲品', imageUrl: getMenuImageUrl('drink-americano-hot')! },
-  { id: 'drink-latte-ice', name: '拿鐵（冰）', price: 100, category: '飲品', imageUrl: getMenuImageUrl('drink-latte-ice')! },
-  { id: 'drink-latte-hot', name: '拿鐵（熱）', price: 100, category: '飲品', imageUrl: getMenuImageUrl('drink-latte-hot')! },
-  { id: 'drink-romano', name: '西西里', price: 120, category: '飲品', imageUrl: getMenuImageUrl('drink-romano')! },
-  { id: 'drink-coldbrew', name: '冷萃', price: 100, category: '飲品', imageUrl: getMenuImageUrl('drink-coldbrew')! },
-  { id: 'drink-blacktea', name: '古早味紅茶', price: 60, category: '飲品', imageUrl: getMenuImageUrl('drink-blacktea')! },
-  { id: 'drink-milktea-ice', name: '鮮奶茶（冰）', price: 100, category: '飲品', imageUrl: getMenuImageUrl('drink-milktea-ice')! },
-  { id: 'drink-milktea-hot', name: '鮮奶茶（熱）', price: 100, category: '飲品', imageUrl: getMenuImageUrl('drink-milktea-hot')! },
-  { id: 'drink-honeylemon', name: '蜂蜜檸檬', price: 80, category: '飲品', imageUrl: getMenuImageUrl('drink-honeylemon')! },
-  { id: 'drink-lemoncola', name: '檸檬可樂', price: 60, category: '飲品', imageUrl: getMenuImageUrl('drink-lemoncola')! },
-  { id: 'drink-lemonsparkle', name: '檸檬氣泡水', price: 60, category: '飲品', imageUrl: getMenuImageUrl('drink-lemonsparkle')! },
-
-  // 食品
-  { id: 'food-bagel-strawberry', name: '貝果-草莓', price: 60, category: '食品', imageUrl: getMenuImageUrl('food-bagel-strawberry')! },
-  { id: 'food-bagel-blueberry', name: '貝果-藍莓', price: 60, category: '食品', imageUrl: getMenuImageUrl('food-bagel-blueberry')! },
-  { id: 'food-bagel-garlic', name: '貝果-蒜味', price: 60, category: '食品', imageUrl: getMenuImageUrl('food-bagel-garlic')! },
-  { id: 'food-bagel-peanut', name: '貝果-花生', price: 60, category: '食品', imageUrl: getMenuImageUrl('food-bagel-peanut')! },
-  { id: 'food-bagel-choco', name: '貝果-巧克力', price: 60, category: '食品', imageUrl: getMenuImageUrl('food-bagel-choco')! },
-  { id: 'food-bagel-eggsalad', name: '貝果-蛋沙拉', price: 90, category: '食品', imageUrl: getMenuImageUrl('food-bagel-eggsalad')! },
-
-  // 商品
-  { id: 'merch-bottle', name: '瓶裝飲料', price: 30, category: '商品', imageUrl: getMenuImageUrl('merch-bottle')! },
-  { id: 'merch-smallwater', name: '小瓶水', price: 20, category: '商品', imageUrl: getMenuImageUrl('merch-smallwater')! },
-  { id: 'merch-bigwater', name: '大瓶水', price: 30, category: '商品', imageUrl: getMenuImageUrl('merch-bigwater')! },
-  { id: 'merch-cola', name: '可樂', price: 40, category: '商品', imageUrl: getMenuImageUrl('merch-cola')! },
-  { id: 'merch-coconut', name: '椰子汁', price: 50, category: '商品', imageUrl: getMenuImageUrl('merch-coconut')! },
-  { id: 'merch-energy', name: '能量飲料', price: 70, category: '商品', imageUrl: getMenuImageUrl('merch-energy')! },
-  { id: 'merch-beer', name: '啤酒', price: 40, category: '商品', imageUrl: getMenuImageUrl('merch-beer')! },
-  { id: 'merch-orion', name: '奧利恩', price: 50, category: '商品', imageUrl: getMenuImageUrl('merch-orion')! },
-  { id: 'merch-corona', name: '科罗纳', price: 20, category: '商品', imageUrl: getMenuImageUrl('merch-corona')! },
-  { id: 'merch-shower', name: '洗澡', price: 20, category: '商品', imageUrl: getMenuImageUrl('merch-shower')! },
-  { id: 'merch-footwash', name: '沖腳', price: 20, category: '商品', imageUrl: getMenuImageUrl('merch-footwash')! },
-  { id: 'merch-other', name: '其他', price: 0, category: '商品', imageUrl: getMenuImageUrl('merch-other')!, requiresMemo: true },
-];
-
-export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, cartCount }: Props) {
-  const [activeTab, setActiveTab] = useState<MenuCategory>('飲品');
-  const [padState, setPadState] = useState<PadState | null>(null);
+export function Menu({
+  menuItems,
+  addToCart,
+  cart,
+  updateQuantity,
+  onCheckout,
+  cartTotal,
+  cartCount,
+}: Props) {
+  const [activeTab, setActiveTab] = useState<MenuCategory>('d');
 
   const filteredItems = useMemo(
     () => menuItems.filter(item => item.category === activeTab),
-    [activeTab]
+    [activeTab, menuItems]
   );
 
   const getItemQuantity = (itemId: string) => cart.find(i => i.id === itemId)?.quantity || 0;
 
-  const openQuantityPad = (item: MenuItem) => {
-    const current = getItemQuantity(item.id);
-    setPadState({ type: 'quantity', item, value: String(current) });
-  };
-
-  const openPricePad = (item: MenuItem) => {
-    setPadState({ type: 'price', item, value: '' });
-  };
-
-  const tapCard = (item: MenuItem, target: HTMLElement) => {
-    const isControl = target.closest('[data-control="true"]');
-    if (isControl) return;
-
-    if (item.id === 'merch-other') {
-      openPricePad(item);
-      return;
-    }
-
-    addToCart(item);
-  };
-
-  const setValue = (next: string) => {
-    setPadState(prev => (prev ? { ...prev, value: next } : prev));
-  };
-
-  const handlePadKey = (key: string) => {
-    if (!padState) return;
-    if (key === 'C') {
-      setValue('');
-      return;
-    }
-    if (key === '⌫') {
-      setValue(padState.value.slice(0, -1));
-      return;
-    }
-    setValue((padState.value + key).slice(0, 4));
-  };
-
-  const confirmPad = () => {
-    if (!padState) return;
-
-    const numericValue = Math.max(0, parseInt(padState.value || '0', 10) || 0);
-    if (padState.type === 'quantity') {
-      updateQuantity(padState.item.id, numericValue);
-    } else if (padState.item.id === 'merch-other') {
-      const price = numericValue;
-      if (price > 0) {
-        addToCart({ ...padState.item, id: `custom-${Date.now()}`, price });
-      }
-    }
-
-    setPadState(null);
-  };
-
   const renderCard = (item: MenuItem) => {
     const quantity = getItemQuantity(item.id);
-    const isCustom = item.id === 'merch-other';
 
     return (
       <div
         key={item.id}
         role="button"
         tabIndex={0}
-        onClick={(e) => tapCard(item, e.target as HTMLElement)}
+        onClick={() => addToCart(item)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            tapCard(item, e.target as HTMLElement);
+            addToCart(item);
           }
         }}
         className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
@@ -179,16 +64,13 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
           <div className="mb-2 flex items-start justify-between gap-2">
             <div>
               <h3 className="text-[15px] font-semibold leading-tight text-stone-900">{item.name}</h3>
-              {item.requiresMemo && <p className="mt-1 text-xs text-amber-700">需備註</p>}
             </div>
-            <span className="shrink-0 text-base font-semibold text-stone-900">
-              {isCustom ? '輸入金額' : `$${item.price}`}
-            </span>
+            <span className="shrink-0 text-base font-semibold text-stone-900">${item.price}</span>
           </div>
 
           <div className="mt-auto">
-            {quantity > 0 && (
-              <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2" data-control="true">
+            {quantity > 0 ? (
+              <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -204,7 +86,7 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    openQuantityPad(item);
+                    updateQuantity(item.id, quantity);
                   }}
                   className="h-11 rounded-2xl border border-stone-200 bg-white text-lg font-semibold text-stone-900 transition hover:bg-stone-50"
                 >
@@ -222,6 +104,13 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
+            ) : (
+              <button
+                type="button"
+                className="flex h-11 w-full items-center justify-center rounded-2xl border border-stone-200 bg-stone-50 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
+              >
+                加入
+              </button>
             )}
           </div>
         </div>
@@ -231,20 +120,33 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
 
   const categoryIcon = (category: MenuCategory) => {
     switch (category) {
-      case '飲品':
+      case 'd':
         return <Coffee className="h-4 w-4" />;
-      case '食品':
+      case 'f':
         return <Sandwich className="h-4 w-4" />;
-      case '商品':
+      case 'm':
         return <ShoppingBag className="h-4 w-4" />;
     }
   };
+
+  const categoryLabel = (category: MenuCategory) => {
+    switch (category) {
+      case 'd':
+        return '飲品';
+      case 'f':
+        return '食品';
+      case 'm':
+        return '商品';
+    }
+  };
+
+  const categories: MenuCategory[] = ['d', 'f', 'm'];
 
   return (
     <div className="px-4 py-5 md:px-6 lg:px-8">
       <Tabs.Root value={activeTab} onValueChange={(v) => setActiveTab(v as MenuCategory)}>
         <Tabs.List className="mb-4 flex rounded-2xl bg-white p-1 shadow-sm ring-1 ring-stone-200">
-          {(['飲品', '食品', '商品'] as MenuCategory[]).map(tab => (
+          {categories.map(tab => (
             <Tabs.Trigger
               key={tab}
               value={tab}
@@ -253,7 +155,7 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
               }`}
             >
               {categoryIcon(tab)}
-              {tab}
+              {categoryLabel(tab)}
             </Tabs.Trigger>
           ))}
         </Tabs.List>
@@ -269,9 +171,7 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
 
           <aside className="rounded-[28px] border border-stone-200 bg-white p-4 shadow-sm md:p-5 lg:sticky lg:top-24 lg:h-[calc(100vh-7rem)] lg:overflow-auto">
             <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">目前訂單</h2>
-              </div>
+              <h2 className="text-lg font-semibold">目前訂單</h2>
             </div>
 
             <div className="space-y-3">
@@ -288,7 +188,6 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
                         <p className="text-sm text-stone-500">
                           ${item.price} × {item.quantity}
                         </p>
-                        {item.requiresMemo && <p className="mt-1 text-xs text-amber-700">備註待填</p>}
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-semibold text-stone-900">
@@ -296,8 +195,6 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
                         </p>
                       </div>
                     </div>
-
-                    {item.requiresMemo}
                   </div>
                 ))
               )}
@@ -326,58 +223,6 @@ export function Menu({ addToCart, cart, updateQuantity, onCheckout, cartTotal, c
           </aside>
         </div>
       </Tabs.Root>
-
-      <Dialog.Root open={padState !== null} onOpenChange={(open) => !open && setPadState(null)}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-[28px] border border-stone-200 bg-white p-5 shadow-2xl">
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <div>
-                <Dialog.Title className="text-lg font-semibold text-stone-900">
-                  {padState?.type === 'quantity' ? '輸入數量' : '輸入金額'}
-                </Dialog.Title>
-                <p className="text-sm text-stone-500">{padState?.item.name}</p>
-              </div>
-              <Dialog.Close className="rounded-full p-2 text-stone-500 transition hover:bg-stone-100 hover:text-stone-900">
-                <X className="h-5 w-5" />
-              </Dialog.Close>
-            </div>
-
-            <input
-              autoFocus
-              inputMode="numeric"
-              value={padState?.value ?? ''}
-              onChange={(e) => setValue(e.target.value.replace(/\D/g, '').slice(0, 4))}
-              className="mb-4 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-4 text-center text-3xl font-semibold tracking-wide text-stone-900 outline-none ring-0 focus:border-stone-400"
-            />
-
-            <div className="grid grid-cols-3 gap-2">
-              {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map(key => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => handlePadKey(key)}
-                  className={`h-14 rounded-2xl text-lg font-semibold transition ${
-                    key === 'C' || key === '⌫'
-                      ? 'bg-rose-50 text-rose-700 hover:bg-rose-100'
-                      : 'bg-stone-100 text-stone-900 hover:bg-stone-200'
-                  }`}
-                >
-                  {key}
-                </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={confirmPad}
-              className="mt-4 w-full rounded-2xl bg-stone-900 py-3.5 text-base font-semibold text-white transition hover:bg-stone-800"
-            >
-              確認
-            </button>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
     </div>
   );
 }
