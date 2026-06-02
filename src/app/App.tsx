@@ -9,7 +9,7 @@ import { fetchInventory, type InventoryItem } from './components/Inventory';
 import { getMenuImageUrl } from './images';
 
 const SHEETS_WEBAPP_URL =
-  'https://script.google.com/macros/s/AKfycbzbjsitXZrj9WPW0UxZ0snf55OQJ4NtpyJMYu89qeV1UJNQGqfnc1qfD5eAksu_M2Dntw/exec';
+  'https://script.google.com/macros/s/AKfycbxtP9O3OvK0uB13AVmmh6Jrz2gArb1DrESecahSYdiNVt-ida0hPpAgvtp3E8RReXupAw/exec';
 
 const STORAGE_KEYS = {
   orders: 'menu_system_orders_v1',
@@ -121,7 +121,6 @@ async function logOrderToSheets(order: Order) {
           items: order.items.map(item => ({
             itemId: item.id,
             count: item.quantity,
-            unitPrice: item.price,
           })),
           payments: order.paymentSplits.map(split => ({
             method: split.method === '現金'
