@@ -262,7 +262,7 @@ export default function App() {
 
   async function logDailySummaryToSheets(orders: Order[]) {
     try {
-      const settledAt = new Date().toISOString();
+      const settledAt = new Date().toLocaleTimeString();
       const revenue = orders.reduce((sum, order) => sum + order.cafeTotal, 0);
       const orderCount = orders.length;
 
