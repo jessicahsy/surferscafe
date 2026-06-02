@@ -5,8 +5,11 @@ import { ActiveOrders } from './components/ActiveOrders';
 import { DailySummary } from './components/DailySummary';
 import { LayoutGrid, ClipboardList, BarChart3 } from 'lucide-react';
 
+import { fetchInventory, type InventoryItem } from './components/Inventory';
+import { getMenuImageUrl } from './images';
+
 const SHEETS_WEBAPP_URL =
-  'https://script.google.com/macros/s/AKfycbw2da0DPCGwYcOZCYGwThsdKSSN-KmBT42HZjAGO9KOuf8OcwcrL_0Lzz5Hpke4TYimGA/exec';
+  'https://script.google.com/macros/s/AKfycbzbjsitXZrj9WPW0UxZ0snf55OQJ4NtpyJMYu89qeV1UJNQGqfnc1qfD5eAksu_M2Dntw/exec';
 
 const STORAGE_KEYS = {
   orders: 'menu_system_orders_v1',
@@ -144,6 +147,7 @@ async function logOrderToSheets(order: Order) {
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('menu');
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [orders, setOrders] = useState<Order[]>(() => readStoredOrders());
   const [nextOrderNumber, setNextOrderNumber] = useState<number>(() =>
     readStoredNextOrderNumber()
@@ -190,6 +194,41 @@ export default function App() {
   };
 
   const clearCart = () => setCart([]);
+
+  useEffect(() => {
+    let alive = true;
+
+    const loadMenu = async () => {
+      const inventoryRows = await fetchInventory();
+      if (!alive) return;
+
+      setMenuItems(
+        inventoryRows
+          .filter(row => row.active === 1)
+          .map(row => ({
+            id: row.item_id,
+            name: row.item_name,
+            price: row.price,
+            category:
+              row.category === 'd'
+                ? '飲品'
+                : row.category === 'f'
+                ? '食品'
+                : '商品',
+            imageUrl: row.image_url || getMenuImageUrl(row.item_id) || undefined,
+            requiresMemo: false,
+          }))
+      );
+    };
+
+    loadMenu().catch(error => {
+      console.error('Failed to load menu inventory:', error);
+    });
+
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const createOrder = async (paymentSplits: PaymentSplit[]) => {
     if (cart.length === 0) return;
@@ -422,6 +461,7 @@ export default function App() {
       <main className="mx-auto max-w-[1600px]">
         {currentView === 'menu' && (
           <Menu
+            menuItems={menuItems}
             addToCart={addToCart}
             cart={cart}
             updateQuantity={updateCartQuantity}
