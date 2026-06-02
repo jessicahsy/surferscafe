@@ -3,13 +3,14 @@ import { Menu } from './components/Menu';
 import { Checkout } from './components/Checkout';
 import { ActiveOrders } from './components/ActiveOrders';
 import { DailySummary } from './components/DailySummary';
-import { LayoutGrid, ClipboardList, BarChart3 } from 'lucide-react';
+import { History } from './components/History';
+import { LayoutGrid, ClipboardList, BarChart3, Clock } from 'lucide-react';
 
 import { fetchInventory, type InventoryItem } from './components/Inventory';
 import { getMenuImageUrl } from './images';
 
 const SHEETS_WEBAPP_URL =
-  'https://script.google.com/macros/s/AKfycbzbjsitXZrj9WPW0UxZ0snf55OQJ4NtpyJMYu89qeV1UJNQGqfnc1qfD5eAksu_M2Dntw/exec';
+  'https://script.google.com/macros/s/AKfycbxtP9O3OvK0uB13AVmmh6Jrz2gArb1DrESecahSYdiNVt-ida0hPpAgvtp3E8RReXupAw/exec';
 
 const STORAGE_KEYS = {
   orders: 'menu_system_orders_v1',
@@ -36,7 +37,6 @@ export type PaymentMethod =
   | '現金'
   | 'LINE Pay'
   | '街口支付'
-  | '轉帳'
   | '刷卡';
 
 export type PaymentSplit = {
@@ -55,7 +55,7 @@ export type Order = {
   needsMemo: boolean;
 };
 
-type View = 'menu' | 'checkout' | 'orders' | 'summary';
+type View = 'menu' | 'checkout' | 'orders' | 'summary' | 'history';
 
 type StoredOrder = Omit<Order, 'timestamp'> & {
   timestamp: string;
@@ -266,11 +266,10 @@ export default function App() {
       const revenue = orders.reduce((sum, order) => sum + order.cafeTotal, 0);
       const orderCount = orders.length;
 
-      const paymentTotals: Record<'現金' | 'LINE Pay' | '街口支付' | '轉帳' | '刷卡', number> = {
+      const paymentTotals: Record<'現金' | 'LINE Pay' | '街口支付' | '刷卡', number> = {
         現金: 0,
         'LINE Pay': 0,
         '街口支付': 0,
-        轉帳: 0,
         刷卡: 0,
       };
 
@@ -442,6 +441,18 @@ export default function App() {
               今日結算
             </button>
 
+            <button
+              onClick={() => setCurrentView('history')}
+              className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                currentView === 'history'
+                  ? 'bg-stone-900 text-white shadow'
+                  : 'bg-white text-stone-700 hover:bg-stone-100'
+              }`}
+            >
+              <Clock className="h-4 w-4" />
+              紀錄
+            </button>
+
             <div className="ml-auto">
               {cartCount > 0 &&
                 currentView !== 'orders' &&
@@ -494,6 +505,10 @@ export default function App() {
             orders={orders}
             onSettleToday={settleToday}
           />
+        )}
+
+        {currentView === 'history' && (
+          <History />
         )}
       </main>
     </div>

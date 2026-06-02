@@ -12,11 +12,10 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   現金: '現金',
   'LINE Pay': 'LINE Pay',
   '街口支付': '街口支付',
-  轉帳: '銀行轉帳',
   刷卡: '刷卡',
 };
 
-const paymentMethodOrder: PaymentMethod[] = ['現金', 'LINE Pay', '街口支付', '轉帳', '刷卡'];
+const paymentMethodOrder: PaymentMethod[] = ['現金', 'LINE Pay', '街口支付', '刷卡'];
 
 function StatCard({
   title,
