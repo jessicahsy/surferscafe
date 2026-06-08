@@ -99,6 +99,23 @@ export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, remov
           ))}
         </div>
 
+        {order.status === '完成' && (
+          <div className="mt-4 rounded-3xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
+            <div className="space-y-2">
+              {order.paymentSplits.map((split, index) => (
+                <div key={`${split.method}-${index}`} className="flex items-center justify-between gap-3 rounded-2xl bg-white px-3 py-2">
+                  <div>
+                    <p className="font-medium text-stone-900">{split.method}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-stone-900">${split.amount}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="mt-3 flex gap-2">
           <button
             onClick={() =>
