@@ -88,10 +88,17 @@ const paymentBreakdown = useMemo(() => {
     // proportion of order belonging to cafe items
     const ratio = cafeTotal / orderTotal;
 
-    (order.paymentSplits || []).forEach(split => {
+    const paymentSplits = order.paymentSplits || [];
+    const totalPaid = paymentSplits.reduce(
+      (sum, split) => sum + (Number(split.amount) || 0),
+      0
+    );
+    const paymentScale = totalPaid > orderTotal && orderTotal > 0 ? orderTotal / totalPaid : 1;
+
+    paymentSplits.forEach(split => {
       if (split.method in totals) {
         totals[split.method] +=
-          (Number(split.amount) || 0) * ratio;
+          (Number(split.amount) || 0) * ratio * paymentScale;
       }
     });
   });

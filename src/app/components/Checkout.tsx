@@ -189,7 +189,17 @@ export function Checkout({ cart, updateQuantity, onConfirm, onCancel }: Props) {
       return;
     }
 
-    onConfirm(splits.filter(split => split.amount > 0));
+    const normalizedSplits = splits
+      .filter(split => split.amount > 0)
+      .map(split => {
+        if (splits.length === 1 && split.method === '現金') {
+          return { ...split, amount: Math.min(split.amount, total) };
+        }
+
+        return split;
+      });
+
+    onConfirm(normalizedSplits);
   };
 
   return (
