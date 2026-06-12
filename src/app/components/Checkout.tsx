@@ -309,7 +309,7 @@ export function Checkout({ cart, updateQuantity, onConfirm, onCancel }: Props) {
             </div>
 
             <div className="mb-4 rounded-3xl border border-stone-200 bg-stone-50 p-4">
-              <p className="mb-3 text-sm font-medium text-stone-500">服務類型 (選填)</p>
+              <p className="mb-3 text-sm font-medium text-stone-500">服務類型</p>
               <div className="grid grid-cols-2 gap-3">
                 {(['內用', '外帶'] as const).map(type => (
                   <button
