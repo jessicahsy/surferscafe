@@ -12,11 +12,11 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   現金: '現金',
   'LINE Pay': 'LINE Pay',
   '街口支付': '街口支付',
-  轉帳: '銀行轉帳',
   刷卡: '刷卡',
+  '代付款': '代付款',
 };
 
-const paymentMethodOrder: PaymentMethod[] = ['現金', 'LINE Pay', '街口支付', '轉帳', '刷卡'];
+const paymentMethodOrder: Exclude<PaymentMethod, '代付款' | '轉帳'>[] = ['現金', 'LINE Pay', '街口支付', '刷卡'];
 
 function StatCard({
   title,
@@ -72,11 +72,13 @@ export function DailySummary({ orders, onSettleToday }: Props) {
 const paymentBreakdown = useMemo(() => {
   const totals = Object.fromEntries(
     paymentMethodOrder.map(method => [method, 0])
-  ) as Record<PaymentMethod, number>;
+  ) as Record<Exclude<PaymentMethod, '代付款' | '轉帳'>, number>;
 
-  todayOrders.forEach(order => {
-    // use existing cafeTotal so settlement logic remains unchanged
-    const cafeTotal = order.cafeTotal || 0;
+  todayOrders
+    .filter(order => order.status === '完成')
+    .forEach(order => {
+      // use existing cafeTotal so settlement logic remains unchanged
+      const cafeTotal = order.cafeTotal || 0;
 
     const orderTotal = order.items.reduce(
       (sum, item) => sum + item.price * item.quantity,
@@ -97,7 +99,7 @@ const paymentBreakdown = useMemo(() => {
 
     paymentSplits.forEach(split => {
       if (split.method in totals) {
-        totals[split.method] +=
+        totals[split.method as keyof typeof totals] +=
           (Number(split.amount) || 0) * ratio * paymentScale;
       }
     });

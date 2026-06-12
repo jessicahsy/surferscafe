@@ -14,7 +14,7 @@ import type { CartItem, PaymentMethod, PaymentSplit } from '../App';
 type Props = {
   cart: CartItem[];
   updateQuantity: (itemId: string, quantity: number) => void;
-  onConfirm: (paymentSplits: PaymentSplit[]) => void;
+  onConfirm: (paymentSplits: PaymentSplit[], serviceType?: '內用' | '外帶') => void;
   onCancel: () => void;
 };
 
@@ -23,6 +23,7 @@ const paymentMethods: { value: PaymentMethod; label: string; icon: ReactNode }[]
   { value: 'LINE Pay', label: 'LINE Pay', icon: <Smartphone className="h-5 w-5" /> },
   { value: '街口支付', label: '街口支付', icon: <Smartphone className="h-5 w-5" /> },
   { value: '刷卡', label: '刷卡', icon: <CreditCard className="h-5 w-5" /> },
+  { value: '代付款', label: '代付款', icon: <Plus className="h-5 w-5" /> },
 ];
 
 export function Checkout({ cart, updateQuantity, onConfirm, onCancel }: Props) {
@@ -186,7 +187,7 @@ export function Checkout({ cart, updateQuantity, onConfirm, onCancel }: Props) {
     if (cart.length === 0 || !isBalanced) return;
 
     if (splits.length === 0) {
-      onConfirm([{ method: '現金', amount: total }]);
+      onConfirm([{ method: '現金', amount: total }], serviceType || undefined);
       return;
     }
 
@@ -200,7 +201,7 @@ export function Checkout({ cart, updateQuantity, onConfirm, onCancel }: Props) {
         return split;
       });
 
-    onConfirm(normalizedSplits);
+    onConfirm(normalizedSplits, serviceType || undefined);
   };
 
   return (

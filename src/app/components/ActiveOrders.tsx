@@ -2,11 +2,14 @@ import { useMemo, useState } from 'react';
 import { Clock, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import * as Dialog from '@radix-ui/react-dialog';
-import type { Order } from '../App';
+import type { Order, PaymentMethod } from '../App';
+
+type ActualPaymentMethod = Exclude<PaymentMethod, '代付款' | '轉帳'>;
 
 type Props = {
   orders: Order[];
-  updateOrderStatus: (orderId: string, status: '製作中' | '完成') => void;
+  updateOrderStatus: (orderId: string, status: '製作中' | '完成' | '待付款') => void;
+  updateOrderPaymentMethod: (orderId: string, method: ActualPaymentMethod) => Promise<void>;
   updateOrderMemo: (orderId: string, itemId: string, memo: string) => void;
   removeOrder: (orderId: string) => void;
 };
@@ -17,13 +20,27 @@ type EditingMemoState = {
   itemName: string;
 } | null;
 
-export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, removeOrder }: Props) {
+export function ActiveOrders({
+  orders,
+  updateOrderStatus,
+  updateOrderPaymentMethod,
+  updateOrderMemo,
+  removeOrder,
+}: Props) {
   const [editingMemo, setEditingMemo] = useState<EditingMemoState>(null);
   const [memoText, setMemoText] = useState('');
   const [showCompleted, setShowCompleted] = useState(false);
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
+    Record<string, ActualPaymentMethod>
+  >({});
+
+  const paymentOptions: ActualPaymentMethod[] = ['現金', 'LINE Pay', '街口支付', '刷卡'];
 
   const activeOrders = useMemo(
-    () => orders.filter((o) => o.status === '製作中').sort((a, b) => a.sequence - b.sequence),
+    () =>
+      orders
+        .filter((o) => o.status === '製作中' || o.status === '待付款')
+        .sort((a, b) => a.sequence - b.sequence),
     [orders]
   );
 
@@ -71,6 +88,12 @@ export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, remov
           </div>
         </div>
 
+        {order.serviceType && (
+          <div className="mb-3 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-600">
+            服務：{order.serviceType}
+          </div>
+        )}
+
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
           {order.items.map((item) => (
             <div key={item.id} className="rounded-2xl bg-stone-50 px-3 py-2">
@@ -116,19 +139,52 @@ export function ActiveOrders({ orders, updateOrderStatus, updateOrderMemo, remov
           </div>
         )}
 
-        <div className="mt-3 flex gap-2">
-          <button
-            onClick={() =>
-              updateOrderStatus(order.id, order.status === '製作中' ? '完成' : '製作中')
-            }
-            className={`rounded-2xl px-4 py-2 text-sm font-semibold transition ${
-              order.status === '完成'
-                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                : 'bg-stone-900 text-white hover:bg-stone-800'
-            }`}
-          >
-            {order.status === '製作中' ? '完成訂單' : '製作中'}
-          </button>
+        <div className="mt-3 flex flex-col gap-2">
+          {order.status === '待付款' ? (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-stone-500">選擇付款方式</label>
+              <div className="flex gap-2">
+                <select
+                  value={selectedPaymentMethods[order.id] ?? paymentOptions[0]}
+                  onChange={e =>
+                    setSelectedPaymentMethods(prev => ({
+                      ...prev,
+                      [order.id]: e.target.value as ActualPaymentMethod,
+                    }))
+                  }
+                  className="flex-1 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-stone-900 outline-none focus:border-stone-400"
+                >
+                  {paymentOptions.map(method => (
+                    <option key={method} value={method}>
+                      {method}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={async () => {
+                    const method = selectedPaymentMethods[order.id] ?? paymentOptions[0];
+                    await updateOrderPaymentMethod(order.id, method);
+                  }}
+                  className="rounded-2xl bg-stone-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-stone-800"
+                >
+                  收款完成
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() =>
+                updateOrderStatus(order.id, order.status === '製作中' ? '完成' : '製作中')
+              }
+              className={`rounded-2xl px-4 py-2 text-sm font-semibold transition ${
+                order.status === '完成'
+                  ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                  : 'bg-stone-900 text-white hover:bg-stone-800'
+              }`}
+            >
+              {order.status === '製作中' ? '完成訂單' : '製作中'}
+            </button>
+          )}
 
           <button
             onClick={() => removeOrder(order.id)}

@@ -36,8 +36,8 @@ export type PaymentMethod =
   | '現金'
   | 'LINE Pay'
   | '街口支付'
-  | '轉帳'
-  | '刷卡';
+  | '刷卡'
+  | '代付款';
 
 export type PaymentSplit = {
   method: PaymentMethod;
@@ -50,7 +50,8 @@ export type Order = {
   items: CartItem[];
   cafeTotal: number;
   paymentSplits: PaymentSplit[];
-  status: '製作中' | '完成';
+  status: '製作中' | '完成' | '待付款';
+  serviceType?: '內用' | '外帶';
   timestamp: Date;
   needsMemo: boolean;
 };
@@ -235,48 +236,51 @@ export default function App() {
   ) => {
     if (cart.length === 0) return;
 
-  const cafeTotal = cart
-    .filter(item => item.category !== '商品')
-    .reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const cafeTotal = cart
+      .filter(item => item.category !== '商品')
+      .reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const needsMemo = cart.some(item => item.requiresMemo && !item.memo?.trim());
 
     const orderNumber = nextOrderNumber;
 
-  const newOrder: Order = {
-    id: `#${String(orderNumber).padStart(4, '0')}`,
-    sequence: orderNumber,
-    items: cart.map(item => ({ ...item })),
-    cafeTotal,
-    paymentSplits,
-    status: '製作中',
-    timestamp: new Date(),
-    needsMemo,
-  };
+    const newOrder: Order = {
+      id: `#${String(orderNumber).padStart(4, '0')}`,
+      sequence: orderNumber,
+      items: cart.map(item => ({ ...item })),
+      cafeTotal,
+      paymentSplits,
+      status: paymentSplits.some(split => split.method === '代付款') ? '待付款' : '製作中',
+      serviceType,
+      timestamp: new Date(),
+      needsMemo,
+    };
 
     setOrders(prev => [...prev, newOrder]);
     setNextOrderNumber(prev => prev + 1);
     clearCart();
     setCurrentView('orders');
 
-    await logOrderToSheets(newOrder);
+    if (newOrder.status !== '待付款') {
+      await logOrderToSheets(newOrder);
+    }
   };
 
   async function logDailySummaryToSheets(orders: Order[]) {
     try {
+      const completedOrders = orders.filter(order => order.status === '完成');
       const settledAt = new Date().toLocaleTimeString();
-      const revenue = orders.reduce((sum, order) => sum + order.cafeTotal, 0);
-      const orderCount = orders.length;
+      const revenue = completedOrders.reduce((sum, order) => sum + order.cafeTotal, 0);
+      const orderCount = completedOrders.length;
 
-      const paymentTotals: Record<'現金' | 'LINE Pay' | '街口支付' | '轉帳' | '刷卡', number> = {
+      const paymentTotals: Record<'現金' | 'LINE Pay' | '街口支付' | '刷卡', number> = {
         現金: 0,
         'LINE Pay': 0,
         '街口支付': 0,
-        轉帳: 0,
         刷卡: 0,
       };
 
-      orders.forEach(order => {
+      completedOrders.forEach(order => {
         const orderTotal = order.items.reduce(
           (sum, item) => sum + item.price * item.quantity,
           0
@@ -290,7 +294,7 @@ export default function App() {
           const amount = Math.round((Number(split.amount) || 0) * cafeRatio);
 
           if (split.method in paymentTotals) {
-            paymentTotals[split.method] += amount;
+            paymentTotals[split.method as keyof typeof paymentTotals] += amount;
           }
         });
       });
@@ -321,7 +325,10 @@ export default function App() {
     }
   }
 
-  const updateOrderStatus = (orderId: string, status: '製作中' | '完成') => {
+  const updateOrderStatus = (
+    orderId: string,
+    status: '製作中' | '完成' | '待付款'
+  ) => {
     setOrders(prev =>
       prev.map(order => (order.id === orderId ? { ...order, status } : order))
     );
@@ -353,18 +360,30 @@ export default function App() {
     setOrders(prev => prev.filter(order => order.id !== orderId));
   };
 
-  const updateOrderPayments = (
+  const updateOrderPaymentMethod = async (
     orderId: string,
-    paymentSplits: PaymentSplit[],
-    status?: '製作中' | '完成' | '待支付'
+    method: Exclude<PaymentMethod, '代付款' | '轉帳'>
   ) => {
     setOrders(prev =>
       prev.map(order =>
         order.id === orderId
-          ? { ...order, paymentSplits, status: status ?? order.status }
+          ? {
+              ...order,
+              paymentSplits: [{ method, amount: order.cafeTotal }],
+              status: '完成',
+            }
           : order
       )
     );
+
+    const settledOrder = orders.find(order => order.id === orderId);
+    if (settledOrder?.status === '待付款') {
+      await logOrderToSheets({
+        ...settledOrder,
+        paymentSplits: [{ method, amount: settledOrder.cafeTotal }],
+        status: '完成',
+      });
+    }
   };
 
   const settleToday = async () => {
@@ -499,7 +518,7 @@ export default function App() {
           <ActiveOrders
             orders={orders}
             updateOrderStatus={updateOrderStatus}
-            updateOrderPayments={updateOrderPayments}
+            updateOrderPaymentMethod={updateOrderPaymentMethod}
             updateOrderMemo={updateOrderMemo}
             removeOrder={removeOrder}
           />
