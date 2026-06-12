@@ -229,7 +229,10 @@ export default function App() {
     };
   }, []);
 
-  const createOrder = async (paymentSplits: PaymentSplit[]) => {
+  const createOrder = async (
+    paymentSplits: PaymentSplit[],
+    serviceType?: '內用' | '外帶'
+  ) => {
     if (cart.length === 0) return;
 
   const cafeTotal = cart
@@ -350,6 +353,19 @@ export default function App() {
     setOrders(prev => prev.filter(order => order.id !== orderId));
   };
 
+  const updateOrderPayments = (
+    orderId: string,
+    paymentSplits: PaymentSplit[],
+    status?: '製作中' | '完成' | '待支付'
+  ) => {
+    setOrders(prev =>
+      prev.map(order =>
+        order.id === orderId
+          ? { ...order, paymentSplits, status: status ?? order.status }
+          : order
+      )
+    );
+  };
 
   const settleToday = async () => {
   const confirmed = window.confirm(
@@ -483,6 +499,7 @@ export default function App() {
           <ActiveOrders
             orders={orders}
             updateOrderStatus={updateOrderStatus}
+            updateOrderPayments={updateOrderPayments}
             updateOrderMemo={updateOrderMemo}
             removeOrder={removeOrder}
           />

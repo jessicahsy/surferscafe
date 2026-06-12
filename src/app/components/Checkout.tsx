@@ -37,6 +37,7 @@ export function Checkout({ cart, updateQuantity, onConfirm, onCancel }: Props) {
   );
 
   const [splits, setSplits] = useState<PaymentSplit[]>([]);
+  const [serviceType, setServiceType] = useState<'內用' | '外帶' | ''>('');
   const [editingAmountIndex, setEditingAmountIndex] = useState<number | null>(null);
   const [amountInput, setAmountInput] = useState('');
   const [isMethodPickerOpen, setIsMethodPickerOpen] = useState(false);
@@ -305,6 +306,26 @@ export function Checkout({ cart, updateQuantity, onConfirm, onCancel }: Props) {
                   新增付款方式
                 </button>
               )}
+            </div>
+
+            <div className="mb-4 rounded-3xl border border-stone-200 bg-stone-50 p-4">
+              <p className="mb-3 text-sm font-medium text-stone-500">服務類型 (選填)</p>
+              <div className="grid grid-cols-2 gap-3">
+                {(['內用', '外帶'] as const).map(type => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setServiceType(current => (current === type ? '' : type))}
+                    className={`rounded-3xl border px-4 py-3 text-sm font-semibold transition ${
+                      serviceType === type
+                        ? 'border-stone-900 bg-stone-900 text-white shadow'
+                        : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
