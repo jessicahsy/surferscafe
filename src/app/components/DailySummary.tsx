@@ -13,10 +13,10 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   'LINE Pay': 'LINE Pay',
   '街口支付': '街口支付',
   刷卡: '刷卡',
-  '代付款': '代付款',
+  '待付款': '待付款',
 };
 
-const paymentMethodOrder: Exclude<PaymentMethod, '代付款' | '轉帳'>[] = ['現金', 'LINE Pay', '街口支付', '刷卡'];
+const paymentMethodOrder: Exclude<PaymentMethod, '待付款' | '轉帳'>[] = ['現金', 'LINE Pay', '街口支付', '刷卡'];
 
 function StatCard({
   title,
@@ -72,7 +72,7 @@ export function DailySummary({ orders, onSettleToday }: Props) {
 const paymentBreakdown = useMemo(() => {
   const totals = Object.fromEntries(
     paymentMethodOrder.map(method => [method, 0])
-  ) as Record<Exclude<PaymentMethod, '代付款' | '轉帳'>, number>;
+  ) as Record<Exclude<PaymentMethod, '待付款' | '轉帳'>, number>;
 
   todayOrders
     .filter(order => order.status === '完成')

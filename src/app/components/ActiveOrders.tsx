@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import * as Dialog from '@radix-ui/react-dialog';
 import type { Order, PaymentMethod } from '../App';
 
-type ActualPaymentMethod = Exclude<PaymentMethod, '代付款' | '轉帳'>;
+type ActualPaymentMethod = Exclude<PaymentMethod, '待付款' | '轉帳'>;
 
 type Props = {
   orders: Order[];

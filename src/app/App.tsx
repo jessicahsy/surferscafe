@@ -37,7 +37,7 @@ export type PaymentMethod =
   | 'LINE Pay'
   | '街口支付'
   | '刷卡'
-  | '代付款';
+  | '待付款';
 
 export type PaymentSplit = {
   method: PaymentMethod;
@@ -250,7 +250,7 @@ export default function App() {
       items: cart.map(item => ({ ...item })),
       cafeTotal,
       paymentSplits,
-      status: paymentSplits.some(split => split.method === '代付款') ? '待付款' : '製作中',
+      status: paymentSplits.some(split => split.method === '待付款') ? '待付款' : '製作中',
       serviceType,
       timestamp: new Date(),
       needsMemo,
@@ -362,7 +362,7 @@ export default function App() {
 
   const updateOrderPaymentMethod = async (
     orderId: string,
-    method: Exclude<PaymentMethod, '代付款' | '轉帳'>
+    method: Exclude<PaymentMethod, '待付款' | '轉帳'>
   ) => {
     setOrders(prev =>
       prev.map(order =>

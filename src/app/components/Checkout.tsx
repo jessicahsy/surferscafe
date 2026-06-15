@@ -23,7 +23,7 @@ const paymentMethods: { value: PaymentMethod; label: string; icon: ReactNode }[]
   { value: 'LINE Pay', label: 'LINE Pay', icon: <Smartphone className="h-5 w-5" /> },
   { value: '街口支付', label: '街口支付', icon: <Smartphone className="h-5 w-5" /> },
   { value: '刷卡', label: '刷卡', icon: <CreditCard className="h-5 w-5" /> },
-  { value: '代付款', label: '代付款', icon: <Plus className="h-5 w-5" /> },
+  { value: '待付款', label: '待付款', icon: <Plus className="h-5 w-5" /> },
 ];
 
 export function Checkout({ cart, updateQuantity, onConfirm, onCancel }: Props) {
