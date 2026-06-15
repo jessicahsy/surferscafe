@@ -30,6 +30,7 @@ export function ActiveOrders({
   const [editingMemo, setEditingMemo] = useState<EditingMemoState>(null);
   const [memoText, setMemoText] = useState('');
   const [showCompleted, setShowCompleted] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
     Record<string, ActualPaymentMethod>
   >({});
@@ -59,6 +60,12 @@ export function ActiveOrders({
     updateOrderMemo(editingMemo.orderId, editingMemo.itemId, memoText.trim());
     setEditingMemo(null);
     setMemoText('');
+  };
+
+  const confirmDeleteOrder = () => {
+    if (!orderToDelete) return;
+    removeOrder(orderToDelete.id);
+    setOrderToDelete(null);
   };
 
   const OrderCard = ({ order }: { order: Order }) => {
@@ -187,7 +194,7 @@ export function ActiveOrders({
           )}
 
           <button
-            onClick={() => removeOrder(order.id)}
+            onClick={() => setOrderToDelete(order)}
             className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-stone-600 transition hover:bg-stone-100"
           >
             <Trash2 className="h-4 w-4" />
@@ -307,6 +314,38 @@ export function ActiveOrders({
                 className="flex-1 rounded-2xl bg-stone-900 px-4 py-3 font-semibold text-white transition hover:bg-stone-800"
               >
                 儲存
+              </button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      <Dialog.Root open={Boolean(orderToDelete)} onOpenChange={(open) => !open && setOrderToDelete(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[28px] border border-stone-200 bg-white p-5 shadow-2xl">
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <Dialog.Title className="text-lg font-semibold text-stone-900">刪除訂單</Dialog.Title>
+                <p className="text-sm text-stone-500">確定要刪除 {orderToDelete?.id} 嗎？此動作無法復原。</p>
+              </div>
+
+              <Dialog.Close className="rounded-full p-2 text-stone-500 transition hover:bg-stone-100 hover:text-stone-900">
+                <X className="h-5 w-5" />
+              </Dialog.Close>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <Dialog.Close asChild>
+                <button className="flex-1 rounded-2xl border border-stone-200 bg-white px-4 py-3 font-semibold text-stone-700 transition hover:bg-stone-100">
+                  取消
+                </button>
+              </Dialog.Close>
+              <button
+                onClick={confirmDeleteOrder}
+                className="flex-1 rounded-2xl bg-rose-600 px-4 py-3 font-semibold text-white transition hover:bg-rose-700"
+              >
+                確認刪除
               </button>
             </div>
           </Dialog.Content>
