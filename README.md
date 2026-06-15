@@ -7,7 +7,7 @@ A modern café ordering frontend built with React, TypeScript, and Vite.
 SurfersCafe is a point-of-sale style ordering interface for a café menu. It supports:
 - Menu browsing and cart management
 - Checkout with optional service type (`內用` / `外帶`)
-- Multiple payment methods including `現金`, `LINE Pay`, `街口支付`, `刷卡`, and deferred pay (`代付款`)
+- Multiple payment methods including `現金`, `LINE Pay`, `街口支付`, `刷卡`, and deferred pay (`待付款`)
 - Pending orders displayed as `待付款` until payment is completed
 - Active order management and memo editing
 - Daily summary and settlement view
@@ -51,7 +51,7 @@ npm run build
 
 - Order data is saved in `localStorage` under the `menu_system_orders_v1` key.
 - Checkout logs may be sent to a Google Sheets web app via `SHEETS_WEBAPP_URL` in `src/app/App.tsx`.
-- Deferred payment orders (`代付款`) are held as pending and are not logged until payment is settled.
+- Deferred payment orders (`待付款`) are held as pending and are not logged until payment is settled.
 
 ## License
 
