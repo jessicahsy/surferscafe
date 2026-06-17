@@ -3,13 +3,14 @@ import { Menu } from './components/Menu';
 import { Checkout } from './components/Checkout';
 import { ActiveOrders } from './components/ActiveOrders';
 import { DailySummary } from './components/DailySummary';
-import { LayoutGrid, ClipboardList, BarChart3 } from 'lucide-react';
+import { ExpenseEntry } from './components/ExpenseEntry';
+import { LayoutGrid, ClipboardList, BarChart3, DollarSign } from 'lucide-react';
 
 import { fetchInventory, type InventoryItem } from './components/Inventory';
 import { getMenuImageUrl } from './images';
 
 const SHEETS_WEBAPP_URL =
-  'https://script.google.com/macros/s/AKfycbxtP9O3OvK0uB13AVmmh6Jrz2gArb1DrESecahSYdiNVt-ida0hPpAgvtp3E8RReXupAw/exec';
+  'https://script.google.com/macros/s/AKfycby1PfGgOJ6_Nl_qQs0YdjT6_mnOm4rp7K0Kq_XQdsmOFBzoGtkO3X-uFiqZZKSzwRZQ1g/exec';
 
 const STORAGE_KEYS = {
   orders: 'menu_system_orders_v1',
@@ -56,7 +57,8 @@ export type Order = {
   needsMemo: boolean;
 };
 
-type View = 'menu' | 'checkout' | 'orders' | 'summary';
+
+type View = 'menu' | 'checkout' | 'orders' | 'summary' | 'expense';
 
 type StoredOrder = Omit<Order, 'timestamp'> & {
   timestamp: string;
@@ -141,6 +143,36 @@ async function logOrderToSheets(order: Order) {
     console.log('logOrderToSheets:', res.status, text);
   } catch (error) {
     console.error('Failed to log order:', error);
+  }
+}
+
+async function logExpenseToSheets(item: string, amount: number) {
+  try {
+    const date = formatLocalDateKey(new Date());
+    const res = await fetch(SHEETS_WEBAPP_URL, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: JSON.stringify({
+        action: 'logExpense',
+        date,
+        Date: date,
+        Amount: amount,
+        Item: item,
+        expense: {
+          item,
+          amount,
+        },
+      }),
+    });
+
+    const text = await res.text();
+    console.log('logExpenseToSheets:', res.status, text);
+  } catch (error) {
+    console.error('Failed to log expense:', error);
+    throw error;
   }
 }
 
@@ -465,6 +497,18 @@ export default function App() {
             </button>
 
             <button
+              onClick={() => setCurrentView('expense')}
+              className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                currentView === 'expense'
+                  ? 'bg-stone-900 text-white shadow'
+                  : 'bg-white text-stone-700 hover:bg-stone-100'
+              }`}
+            >
+              <DollarSign className="h-4 w-4" />
+              支出
+            </button>
+
+            <button
               onClick={() => setCurrentView('summary')}
               className={`flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
                 currentView === 'summary'
@@ -521,6 +565,16 @@ export default function App() {
             updateOrderPaymentMethod={updateOrderPaymentMethod}
             updateOrderMemo={updateOrderMemo}
             removeOrder={removeOrder}
+          />
+        )}
+
+        {currentView === 'expense' && (
+          <ExpenseEntry
+            onSubmit={async (item, amount) => {
+              await logExpenseToSheets(item, amount);
+              setCurrentView('menu');
+            }}
+            onCancel={() => setCurrentView('menu')}
           />
         )}
 
