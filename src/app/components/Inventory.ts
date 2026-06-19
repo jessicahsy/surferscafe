@@ -1,5 +1,5 @@
 export const SHEETS_WEBAPP_URL =
-  'https://script.google.com/macros/s/AKfycby1PfGgOJ6_Nl_qQs0YdjT6_mnOm4rp7K0Kq_XQdsmOFBzoGtkO3X-uFiqZZKSzwRZQ1g/exec';
+  'https://script.google.com/macros/s/AKfycbwjbGwy3UEVWsIzJt5MkNrT_J-tjTqPRsd4s7hNoa0odWU7PIr8wCN6boGZCpnXf8Vq8w/exec';
 
 export type InventoryCategory = 'd' | 'f' | 'm';
 
