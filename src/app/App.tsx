@@ -10,7 +10,7 @@ import { fetchInventory, type InventoryItem } from './components/Inventory';
 import { getMenuImageUrl } from './images';
 
 const SHEETS_WEBAPP_URL =
-  'https://script.google.com/macros/s/AKfycbwywgYIWSXSpF9FAl0kLwPPcCgmkfjB1lKFyG166uwVNimXbdQ2Nwt5oevaxya2nXPwPQ/exec';
+  'https://script.google.com/macros/s/AKfycbwim8hyB6w0zkJSNYEWM40YCxAH50KgR8RkzUCkwJYF2zXwVCpTPsde54D_xcrmbGbo_w/exec';
 
 const STORAGE_KEYS = {
   orders: 'menu_system_orders_v1',
