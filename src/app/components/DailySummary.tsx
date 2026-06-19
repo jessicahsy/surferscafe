@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 import { format } from 'date-fns';
-import { Store, ClipboardList, CheckCircle2, CreditCard } from 'lucide-react';
+import { Store, ClipboardList, CreditCard } from 'lucide-react';
 import type { Order, PaymentMethod } from '../App';
 
 type Props = {
@@ -16,7 +16,12 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   '待付款': '待付款',
 };
 
-const paymentMethodOrder: Exclude<PaymentMethod, '待付款' | '轉帳'>[] = ['現金', 'LINE Pay', '街口支付', '刷卡'];
+const paymentMethodOrder: Exclude<PaymentMethod, '待付款' | '轉帳'>[] = [
+  '現金',
+  'LINE Pay',
+  '街口支付',
+  '刷卡',
+];
 
 function StatCard({
   title,
@@ -69,49 +74,38 @@ export function DailySummary({ orders, onSettleToday }: Props) {
   const activeCount = todayOrders.filter(order => order.status === '製作中').length;
   const completedCount = todayOrders.filter(order => order.status === '完成').length;
 
-const paymentBreakdown = useMemo(() => {
-  const totals = Object.fromEntries(
-    paymentMethodOrder.map(method => [method, 0])
-  ) as Record<Exclude<PaymentMethod, '待付款' | '轉帳'>, number>;
+  const paymentBreakdown = useMemo(() => {
+    const totals = Object.fromEntries(
+      paymentMethodOrder.map(method => [method, 0])
+    ) as Record<Exclude<PaymentMethod, '待付款' | '轉帳'>, number>;
 
-  todayOrders
-    .filter(order => order.status === '完成')
-    .forEach(order => {
-      // use existing cafeTotal so settlement logic remains unchanged
-      const cafeTotal = order.cafeTotal || 0;
+    todayOrders
+      .filter(order => order.status === '完成')
+      .forEach(order => {
+        const paymentSplits = order.paymentSplits || [];
 
-    const orderTotal = order.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+        paymentSplits.forEach(split => {
+          const amount = Number(split.amount) || 0;
 
-    if (cafeTotal <= 0 || orderTotal <= 0) return;
+          if (split.method === '現金') {
+            totals['現金'] += amount;
+          } else if (split.method === 'LINE Pay') {
+            totals['LINE Pay'] += amount;
+          } else if (split.method === '街口支付') {
+            totals['街口支付'] += amount;
+          } else if (split.method === '刷卡') {
+            totals['刷卡'] += amount;
+          }
+        });
+      });
 
-    // proportion of order belonging to cafe items
-    const ratio = cafeTotal / orderTotal;
-
-    const paymentSplits = order.paymentSplits || [];
-    const totalPaid = paymentSplits.reduce(
-      (sum, split) => sum + (Number(split.amount) || 0),
-      0
-    );
-    const paymentScale = totalPaid > orderTotal && orderTotal > 0 ? orderTotal / totalPaid : 1;
-
-    paymentSplits.forEach(split => {
-      if (split.method in totals) {
-        totals[split.method as keyof typeof totals] +=
-          (Number(split.amount) || 0) * ratio * paymentScale;
-      }
-    });
-  });
-
-  return paymentMethodOrder
-    .map(method => ({
-      method,
-      amount: Math.round(totals[method]),
-    }))
-    .filter(item => item.amount > 0);
-}, [todayOrders]);
+    return paymentMethodOrder
+      .map(method => ({
+        method,
+        amount: Math.round(totals[method]),
+      }))
+      .filter(item => item.amount > 0);
+  }, [todayOrders]);
 
   return (
     <div className="px-4 py-5 md:px-6 lg:px-8">
@@ -130,7 +124,7 @@ const paymentBreakdown = useMemo(() => {
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 items-stretch mb-8">
+        <div className="mb-8 grid grid-cols-3 items-stretch gap-4">
           <div className="col-span-2 h-full">
             <StatCard
               title="咖啡廳營業額"
@@ -149,14 +143,13 @@ const paymentBreakdown = useMemo(() => {
               accent="bg-stone-100"
             />
           </div>
-
         </div>
 
         <div className="rounded-[28px] border border-stone-200 bg-white p-5 shadow-sm md:p-6">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-stone-500">付款方式統計</p>
-              <p className="mt-1 text-xs text-stone-400">依今日訂單付款拆分加總</p>
+              <p className="mt-1 text-xs text-stone-400">依今日已完成訂單付款拆分加總</p>
             </div>
             <div className="rounded-2xl bg-stone-100 p-3">
               <CreditCard className="h-5 w-5 text-stone-700" />
