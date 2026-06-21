@@ -64,6 +64,17 @@ type StoredOrder = Omit<Order, 'timestamp'> & {
   timestamp: string;
 };
 
+type SettlementPopup = {
+  open: boolean;
+  success: boolean;
+  orderCount: number;
+  total: number;
+  cashAmount: number;
+  lineAmount: number;
+  jkoAmount: number;
+  cardAmount: number;
+};
+
 function toStoredOrder(order: Order): StoredOrder {
   return {
     ...order,
@@ -105,6 +116,86 @@ function formatLocalDateKey(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function calculateSettlementSummary(orders: Order[]) {
+  const completedOrders = orders.filter(order => order.status === '完成');
+
+  const paymentTotals: Record<'現金' | 'LINE Pay' | '街口支付' | '刷卡', number> = {
+    現金: 0,
+    'LINE Pay': 0,
+    '街口支付': 0,
+    刷卡: 0,
+  };
+
+  completedOrders.forEach(order => {
+    order.paymentSplits.forEach(split => {
+      const amount = Number(split.amount) || 0;
+
+      if (split.method === '現金') {
+        paymentTotals['現金'] += amount;
+      } else if (split.method === 'LINE Pay') {
+        paymentTotals['LINE Pay'] += amount;
+      } else if (split.method === '街口支付') {
+        paymentTotals['街口支付'] += amount;
+      } else if (split.method === '刷卡') {
+        paymentTotals['刷卡'] += amount;
+      }
+    });
+  });
+
+  return {
+    orderCount: completedOrders.length,
+    total: completedOrders.reduce((sum, order) => sum + order.cafeTotal, 0),
+    cashAmount: paymentTotals['現金'],
+    lineAmount: paymentTotals['LINE Pay'],
+    jkoAmount: paymentTotals['街口支付'],
+    cardAmount: paymentTotals['刷卡'],
+  };
+}
+
+async function logDailySummaryToSheets(summary: {
+  orderCount: number;
+  total: number;
+  cashAmount: number;
+  lineAmount: number;
+  jkoAmount: number;
+  cardAmount: number;
+}) {
+  try {
+    const settledAt = new Date().toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+
+    const res = await fetch(SHEETS_WEBAPP_URL, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: JSON.stringify({
+        action: 'logDailySummary',
+        date: formatLocalDateKey(new Date()),
+        revenue: summary.total,
+        orderCount: summary.orderCount,
+        settledAt,
+        cashAmount: summary.cashAmount,
+        lineAmount: summary.lineAmount,
+        jkoAmount: summary.jkoAmount,
+        cardAmount: summary.cardAmount,
+      }),
+    });
+
+    const text = await res.text();
+    console.log('logDailySummaryToSheets:', res.status, text);
+    return res.ok;
+  } catch (error) {
+    console.error('Failed to log daily summary:', error);
+    return false;
+  }
 }
 
 async function logOrderToSheets(order: Order) {
@@ -184,6 +275,7 @@ export default function App() {
   const [nextOrderNumber, setNextOrderNumber] = useState<number>(() =>
     readStoredNextOrderNumber()
   );
+  const [settlementPopup, setSettlementPopup] = useState<SettlementPopup | null>(null);
 
   useEffect(() => {
     try {
@@ -298,64 +390,49 @@ export default function App() {
     }
   };
 
-  async function logDailySummaryToSheets(orders: Order[]) {
-    try {
-      const completedOrders = orders.filter(order => order.status === '完成');
-      const settledAt = new Date().toLocaleTimeString();
-      const revenue = completedOrders.reduce((sum, order) => sum + order.cafeTotal, 0);
-      const orderCount = completedOrders.length;
+async function logDailySummaryToSheets(summary: {
+  orderCount: number;
+  total: number;
+  cashAmount: number;
+  lineAmount: number;
+  jkoAmount: number;
+  cardAmount: number;
+}) {
+  try {
+    const settledAt = new Date().toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
 
-      const paymentTotals: Record<'現金' | 'LINE Pay' | '街口支付' | '刷卡', number> = {
-        現金: 0,
-        'LINE Pay': 0,
-        '街口支付': 0,
-        刷卡: 0,
-      };
+    const res = await fetch(SHEETS_WEBAPP_URL, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: JSON.stringify({
+        action: 'logDailySummary',
+        date: formatLocalDateKey(new Date()),
+        revenue: summary.total,
+        orderCount: summary.orderCount,
+        settledAt,
+        cashAmount: summary.cashAmount,
+        lineAmount: summary.lineAmount,
+        jkoAmount: summary.jkoAmount,
+        cardAmount: summary.cardAmount,
+      }),
+    });
 
-      completedOrders.forEach(order => {
-        const orderTotal = order.items.reduce(
-          (sum, item) => sum + item.price * item.quantity,
-          0
-        );
-
-        if (orderTotal <= 0) return;
-
-        const cafeRatio = order.cafeTotal / orderTotal;
-
-        order.paymentSplits.forEach(split => {
-          const amount = Math.round((Number(split.amount) || 0) * cafeRatio);
-
-          if (split.method in paymentTotals) {
-            paymentTotals[split.method as keyof typeof paymentTotals] += amount;
-          }
-        });
-      });
-
-      const res = await fetch(SHEETS_WEBAPP_URL, {
-        method: 'POST',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'text/plain',
-        },
-        body: JSON.stringify({
-          action: 'logDailySummary',
-          date: formatLocalDateKey(new Date()),
-          revenue,
-          orderCount,
-          settledAt,
-          cashAmount: paymentTotals['現金'],
-          lineAmount: paymentTotals['LINE Pay'],
-          jkoAmount: paymentTotals['街口支付'],
-          cardAmount: paymentTotals['刷卡'],
-        }),
-      });
-
-      const text = await res.text();
-      console.log('logDailySummaryToSheets:', res.status, text);
-    } catch (error) {
-      console.error('Failed to log daily summary:', error);
-    }
+    const text = await res.text();
+    console.log('logDailySummaryToSheets:', res.status, text);
+    return res.ok;
+  } catch (error) {
+    console.error('Failed to log daily summary:', error);
+    return false;
   }
+}
 
   const updateOrderStatus = (
     orderId: string,
@@ -419,26 +496,38 @@ export default function App() {
   };
 
   const settleToday = async () => {
-  const confirmed = window.confirm(
-    '確定要進行今日結算嗎？這將清除目前畫面並重置編號。'
-  );
+    const confirmed = window.confirm(
+      '確定要進行今日結算嗎？這將清除目前畫面並重置編號。'
+    );
 
-  if (!confirmed) return;
+    if (!confirmed) return;
 
-  await logDailySummaryToSheets(orders);
+    const summary = calculateSettlementSummary(orders);
+    const success = await logDailySummaryToSheets(summary);
 
-  setOrders([]);
-  setCart([]);
-  setNextOrderNumber(1);
-  setCurrentView('menu');
+    setSettlementPopup({
+      open: true,
+      success,
+      orderCount: summary.orderCount,
+      total: summary.total,
+      cashAmount: summary.cashAmount,
+      lineAmount: summary.lineAmount,
+      jkoAmount: summary.jkoAmount,
+      cardAmount: summary.cardAmount,
+    });
 
-  try {
-    localStorage.removeItem(STORAGE_KEYS.orders);
-    localStorage.removeItem(STORAGE_KEYS.nextOrderNumber);
-  } catch (error) {
-    console.error('Failed to clear local storage:', error);
-  }
-};
+    setOrders([]);
+    setCart([]);
+    setNextOrderNumber(1);
+    setCurrentView('menu');
+
+    try {
+      localStorage.removeItem(STORAGE_KEYS.orders);
+      localStorage.removeItem(STORAGE_KEYS.nextOrderNumber);
+    } catch (error) {
+      console.error('Failed to clear local storage:', error);
+    }
+  };
 
   const cartTotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -584,6 +673,36 @@ export default function App() {
             onSettleToday={settleToday}
           />
         )}
+
+      {settlementPopup?.open && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-4">
+          <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl">
+            <h3 className="text-2xl font-semibold tracking-tight text-stone-900">
+              {settlementPopup.success ? '記帳成功' : '記帳失敗'}
+            </h3>
+
+            <div className="mt-4 space-y-1 text-sm text-stone-600">
+              <p>訂單數：{settlementPopup.orderCount}</p>
+              <p>總金額：${settlementPopup.total.toLocaleString()}</p>
+            </div>
+
+            <div className="mt-4 space-y-1 text-sm text-stone-500">
+              <p>現金：${settlementPopup.cashAmount.toLocaleString()}</p>
+              <p>LINE Pay：${settlementPopup.lineAmount.toLocaleString()}</p>
+              <p>街口支付：${settlementPopup.jkoAmount.toLocaleString()}</p>
+              <p>刷卡：${settlementPopup.cardAmount.toLocaleString()}</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSettlementPopup(null)}
+              className="mt-5 w-full rounded-2xl bg-stone-900 px-4 py-3 font-semibold text-white transition hover:bg-stone-800"
+            >
+              確定
+            </button>
+          </div>
+        </div>
+      )}
       </main>
     </div>
   );
